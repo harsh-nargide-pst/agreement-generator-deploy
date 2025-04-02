@@ -49,6 +49,15 @@ async def create_agreement(
                 "email": tenant.get("email"),
             }
         )
+    for witness in agreement.witness_details:
+        await db.witness.create(
+            data={
+                "agreementId": agreements.id,
+                "name": witness.get("name"),
+                "email": witness.get("email"),
+            }
+        )
+
 
     return await create_agreement_details(agreement, agreements.id, db)
 

@@ -20,3 +20,4 @@ class AgreementRequest(BaseModel):
     furniture_and_appliances: List[Dict[str, str]]
     amenities: List[str]
     user_id: str
+    witness_details: List[Dict[str, str]]

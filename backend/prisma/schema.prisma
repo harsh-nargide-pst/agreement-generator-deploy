@@ -21,6 +21,7 @@ model Agreement {
   owner            Owner[]
   tenants          Tenant[]
   clerkUserIds     String[]
+  witnesses        Witness[]
 }
 
 model Owner {
@@ -89,4 +90,13 @@ model UserAgreementStatus {
   agreementId                       Int
   status                            AgreementStatus     @default(PROCESSING)
   @@unique([agreementId, userId])
+}
+
+model Witness {
+  id            Int         @id @default(autoincrement())
+  agreementId   Int
+  name          String
+  email         String
+  createdAt     DateTime    @default(now())
+  agreement     Agreement   @relation(fields: [agreementId], references: [id])
 }
