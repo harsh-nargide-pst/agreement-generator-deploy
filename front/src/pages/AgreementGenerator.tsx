@@ -64,6 +64,7 @@ export function AgreementGenerator() {
     sendOwner: false,
     verifyOwner: false,
     tenants: {} as Record<number, { send: boolean; verify: boolean }>,
+    witnesses: {} as Record<number, { send: boolean; verify: boolean }>,
   });
   const ownerTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -146,6 +147,52 @@ export function AgreementGenerator() {
     }, 1000);
   };
 
+  const [witnessOtpState, setWitnessOtpState] = useState<Record<number, OtpState>>({});
+  const witnessTimersRef = useRef<Record<number, ReturnType<typeof setInterval> | null>>({});
+
+  const startWitnessCountdown = (index: number) => {
+    if (witnessOtpState[index]?.isCountdownActive) return;
+
+    setWitnessOtpState((prev) => ({
+      ...prev,
+      [index]: {
+        ...(prev[index] || getDefaultOtpState()),
+        isCountdownActive: true,
+        timer: 300,
+        isSent: true,
+        showResendButton: false,
+        error: "",
+      },
+    }));
+
+    witnessTimersRef.current[index] = setInterval(() => {
+      setWitnessOtpState((prev) => {
+        if (prev[index]?.timer <= 1) {
+          clearInterval(witnessTimersRef.current[index]!);
+          return {
+            ...prev,
+            [index]: {
+              ...(prev[index] || getDefaultOtpState()),
+              isCountdownActive: false,
+              isSent: false,
+              showResendButton: true,
+              otp: "",
+              error: "OTP expired. Please request a new OTP.",
+              timer: 0,
+            },
+          };
+        }
+        return {
+          ...prev,
+          [index]: {
+            ...(prev[index] || getDefaultOtpState()),
+            timer: prev[index]?.timer - 1,
+          },
+        };
+      });
+    }, 1000);
+  };
+
   useEffect(() => {
     if (data) {
       const { success, type } = data;
@@ -163,6 +210,16 @@ export function AgreementGenerator() {
             [otpIndex]: getSuccessOtpState(prev[otpIndex]),
           }));
         }
+        if (
+          type === "witness" &&
+          otpIndex !== null &&
+          witnessOtpState[otpIndex]?.isSent
+        ) {
+          setWitnessOtpState((prev) => ({
+            ...prev,
+            [otpIndex]: getSuccessOtpState(prev[otpIndex]),
+          }));
+        }
       } else {
         if (type === "owner" && ownerOtpState.isSent) {
           setOwnerOtpState(getFailureOtpState);
@@ -173,6 +230,16 @@ export function AgreementGenerator() {
           tenantsOtpState[otpIndex]?.isSent
         ) {
           setTenantsOtpState((prev) => ({
+            ...prev,
+            [otpIndex]: getFailureOtpState(prev[otpIndex]),
+          }));
+        }
+        if (
+          type === "witness" &&
+          otpIndex !== null &&
+          witnessOtpState[otpIndex]?.isSent
+        ) {
+          setWitnessOtpState((prev) => ({
             ...prev,
             [otpIndex]: getFailureOtpState(prev[otpIndex]),
           }));
@@ -348,6 +415,90 @@ export function AgreementGenerator() {
     }
   };
 
+  const handleSendWitnessOTP = async (index: number) => {
+    setLoadingStates((prev) => ({
+      ...prev,
+      witnesses: {
+        ...prev.witnesses,
+        [index]: { send: true, verify: prev.witnesses[index]?.verify || false },
+      },
+    }));
+    try {
+      await sendOTP({
+        method: "POST",
+        data: { email: form.values.witnesses[index].email, type: "witness" },
+      });
+      setWitnessOtpState((prev) => ({
+        ...prev,
+        [index]: {
+          ...(prev[index] || getDefaultOtpState()),
+          isSent: true,
+          error: "",
+        },
+      }));
+      startWitnessCountdown(index);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      setWitnessOtpState((prev) => ({
+        ...prev,
+        [index]: {
+          ...(prev[index] || getDefaultOtpState()),
+          error: "Failed to send OTP. Please try again.",
+        },
+      }));
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        witnesses: {
+          ...prev.witnesses,
+          [index]: {
+            send: false,
+            verify: prev.witnesses[index]?.verify || false,
+          },
+        },
+      }));
+    }
+  };
+
+  const handleVerifyWitnessOTP = async (index: number) => {
+    setLoadingStates((prev) => ({
+      ...prev,
+      witnesses: {
+        ...prev.witnesses,
+        [index]: { send: prev.witnesses[index]?.send || false, verify: true },
+      },
+    }));
+    try {
+      setOtpIndex(index);
+      await verifyOTP({
+        method: "POST",
+        data: {
+          email: form.values.witnesses[index].email,
+          otp: witnessOtpState[index].otp,
+          type: "witness",
+        },
+      });
+    } catch (error) {
+      console.error("Error verifying witness OTP:", error);
+      setWitnessOtpState((prev) => ({
+        ...prev,
+        [index]: {
+          ...(prev[index] || getDefaultOtpState()),
+          error: "Invalid OTP. Please enter the correct OTP.",
+        },
+      }));
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        witnesses: {
+          ...prev.witnesses,
+          [index]: { send: prev.witnesses[index]?.send || false, verify: false },
+        },
+      }));
+    }
+  };
+
+
   const form = useForm({
     mode: "controlled",
     initialValues: {
@@ -379,6 +530,19 @@ export function AgreementGenerator() {
         },
       })),
       tenantNumber: 2,
+      witnesses: Array.from({ length: 2 }, () => ({
+        fullName: "",
+        email: "",
+        address: "",
+        AddressConfirmed: false,
+        addressDetails: {
+          flatFloor: "",
+          buildingName: "",
+          area: "",
+          city: "",
+          pincode: "",
+        },
+      })),
       // Agreement Details
       address: "",
       city: "",
@@ -443,7 +607,23 @@ export function AgreementGenerator() {
           );
         });
       }
-      if (active === 4) {
+      if (active === 3) {
+        values.witnesses.forEach((witness, index) => {
+          if (!fullNameRegex.test(witness.fullName.trim())) {
+            errors[`witnesses.${index}.fullName`] =
+              "Witness full name must include at least a first name and a surname";
+          }
+          if (!emailRegex.test(witness.email)) {
+            errors[`witnesses.${index}.email`] =
+              "Please enter a valid email address";
+          }
+          validateAddressFields(
+            witness.addressDetails,
+            `witnesses.${index}.addressDetails`
+          );
+        });
+      }
+      if (active === 5) {
         if (values.address.trim().length < 10) {
           errors.address = "Address must be at least 10 characters";
         }
@@ -471,7 +651,7 @@ export function AgreementGenerator() {
           }
         }
       }
-      if (active === 3) {
+      if (active === 4) {
         if (
           (furnishingType === "furnished" ||
             furnishingType === "semi-furnished") &&
@@ -580,7 +760,21 @@ export function AgreementGenerator() {
         handleConfirmTenantAddress(index)
       );
     }
-    setActive((current) => (current < 5 ? current + 1 : current));
+
+    if (active === 3) {
+      const unverifiedWitness = Object.values(witnessOtpState).some(
+        (state) => !state?.isVerified
+      );
+      if (unverifiedWitness) {
+        alert("All witnesses must verify their OTP before proceeding.");
+        return;
+      }
+      form.values.witnesses.forEach((_, index) =>
+        handleConfirmWitnessAddress(index)
+      );
+    }
+
+    setActive((current) => (current < 6 ? current + 1 : current));
   };
 
   const prevStep = () =>
@@ -589,7 +783,7 @@ export function AgreementGenerator() {
   const handleSubmit = async () => {
     const { hasErrors } = form.validate();
     if (hasErrors) return;
-    setActive((current) => (current < 5 ? current + 1 : current));
+    setActive((current) => (current < 6 ? current + 1 : current));
     setIsSubmitting(true);
     setShowMessage(false);
     setTimeout(() => {
@@ -611,6 +805,11 @@ export function AgreementGenerator() {
         name: tenant.fullName,
         email: tenant.email,
         address: tenant.address,
+      })),
+      witness_details: form.values.witnesses.map((witness) => ({
+        name: witness.fullName,
+        email: witness.email,
+        address: witness.address,
       })),
       property_address: form.values.address,
       city: form.values.city,
@@ -648,6 +847,12 @@ export function AgreementGenerator() {
     const tenantDetails = form.values.tenants[index].addressDetails;
     const fullAddress = `${tenantDetails.flatFloor}, ${tenantDetails.buildingName}, ${tenantDetails.area}, ${tenantDetails.city} - ${tenantDetails.pincode}`;
     form.setFieldValue(`tenants.${index}.address`, fullAddress);
+  };
+
+  const handleConfirmWitnessAddress = (index: number) => {
+    const witnessDetails = form.values.witnesses[index].addressDetails;
+    const fullAddress = `${witnessDetails.flatFloor}, ${witnessDetails.buildingName}, ${witnessDetails.area}, ${witnessDetails.city} - ${witnessDetails.pincode}`;
+    form.setFieldValue(`witnesses.${index}.address`, fullAddress);
   };
 
   return (
@@ -842,7 +1047,104 @@ export function AgreementGenerator() {
             ))}
           </Stepper.Step>
 
-          <Stepper.Step label="Step 4" description="Lease property Details">
+          <Stepper.Step label="Step 4" description="Witness Details">
+            {form.values.witnesses.map((_, index) => (
+              <Box key={index} mt="md">
+                <Title order={4} ml={0}>{`Witness ${index + 1}`}</Title>
+                <TextInput
+                  label={`Full Name`}
+                  placeholder="Type witness's full name here"
+                  key={form.key(`witnesses.${index}.fullName`)}
+                  style={{ textAlign: "start" }}
+                  {...form.getInputProps(`witnesses.${index}.fullName`)}
+                  withAsterisk
+                />
+                <TextInput
+                  mt="md"
+                  label={`Email`}
+                  placeholder="Type witness's email address here"
+                  key={form.key(`witnesses.${index}.email`)}
+                  style={{ textAlign: "start" }}
+                  {...form.getInputProps(`witnesses.${index}.email`)}
+                  onChange={(event) => {
+                    form.setFieldValue(
+                      `witnesses.${index}.email`,
+                      event.currentTarget.value
+                    );
+                    setWitnessOtpState((prev) => ({
+                      ...prev,
+                      [index]: getDefaultOtpState(),
+                    }));
+                  }}
+                  withAsterisk
+                  disabled={
+                    (witnessOtpState[index]?.isSent &&
+                      witnessOtpState[index]?.isCountdownActive) ||
+                    witnessOtpState[index]?.isVerified
+                  }
+                  rightSection={
+                    witnessOtpState[index]?.isVerified ? (
+                      <ThemeIcon color="green" radius="xl" size="sm">
+                        <IconCheck size={16} />
+                      </ThemeIcon>
+                    ) : null
+                  }
+                />
+                <OTPInput
+                  otpState={witnessOtpState[index] || getDefaultOtpState()}
+                  onOtpChange={(value) =>
+                    setWitnessOtpState((prev) => ({
+                      ...prev,
+                      [index]: {
+                        ...(prev[index] || getDefaultOtpState()),
+                        otp: value,
+                        error: value ? "" : prev[index]?.error,
+                      },
+                    }))
+                  }
+                  onSendOtp={() => handleSendWitnessOTP(index)}
+                  onVerifyOtp={() => handleVerifyWitnessOTP(index)}
+                  label={`Enter OTP for Witness ${index + 1}`}
+                  disabledSendOtp={
+                    !form.values.witnesses[index].email ||
+                    !/^\S+@\S+\.\S+$/.test(form.values.witnesses[index].email) ||
+                    (witnessOtpState[index]?.isSent &&
+                      witnessOtpState[index]?.isCountdownActive) ||
+                    witnessOtpState[index]?.isVerified
+                  }
+                  loading={
+                    loadingStates.witnesses[index]?.send ||
+                    loadingStates.witnesses[index]?.verify
+                  }
+                />
+                <Box>
+                  <Text size="sm" fw={500} style={{ marginBottom: 4 }}>
+                    Address <span style={{ color: "red" }}>*</span>
+                  </Text>
+
+                  <AddressForm
+                    addressDetails={form.values.witnesses[index].addressDetails}
+                    onChange={(field, value) => {
+                      form.setFieldValue(
+                        `witnesses.${index}.addressDetails.${field}`,
+                        value
+                      );
+                    }}
+                    formPrefix={`witnesses.${index}.addressDetails`}
+                    errors={Object.fromEntries(
+                      Object.entries(form.errors)
+                        .filter(([key]) =>
+                          key.startsWith(`witnesses.${index}.addressDetails`)
+                        )
+                        .map(([key, value]) => [key, String(value)])
+                    )}
+                  />
+                </Box>
+              </Box>
+            ))}
+          </Stepper.Step>
+
+          <Stepper.Step label="Step 5" description="Lease property Details">
             <Stack gap="md">
               <NumberInput
                 label="Area (sq. ft.)"
@@ -903,7 +1205,7 @@ export function AgreementGenerator() {
               )}
             </Stack>
           </Stepper.Step>
-          <Stepper.Step label="Step 5" description="Agreement Details">
+          <Stepper.Step label="Step 6" description="Agreement Details">
             <TextInput
               label="Address"
               placeholder="Address"
@@ -1030,6 +1332,7 @@ export function AgreementGenerator() {
                         setTenantsOtpState({});
                         setFurnitureList([]);
                         setFurnishingType("");
+                        setWitnessOtpState({});
                       }}
                     >
                       Finish
@@ -1042,14 +1345,14 @@ export function AgreementGenerator() {
         </Stepper>
 
         <Group justify="flex-end" mt="xl">
-          {active > 0 && active < 5 && !isSubmitting && (
+          {active > 0 && active < 6 && !isSubmitting && (
             <Button variant="default" onClick={prevStep}>
               Back
             </Button>
           )}
-          {active < 5 && (
+          {active < 6 && (
             <Button
-              onClick={active < 4 ? nextStep : handleSubmit}
+              onClick={active < 5 ? nextStep : handleSubmit}
               disabled={
                 (active === 0 && !ownerOtpState.isVerified) ||
                 (active === 2 &&
@@ -1060,12 +1363,16 @@ export function AgreementGenerator() {
                     (state) => !state?.isVerified
                   )) ||
                 (active === 3 &&
+                  Object.values(witnessOtpState).some(
+                    (state) => !state?.isVerified
+                  )) ||
+                (active === 4 &&
                   (furnishingType === "furnished" ||
                     furnishingType === "semi-furnished") &&
                   furnitureList.length === 0)
               }
             >
-              {active < 4 ? "Continue" : "Generate Agreement"}
+              {active < 6 ? "Continue" : "Generate Agreement"}
             </Button>
           )}
         </Group>
