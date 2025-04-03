@@ -97,7 +97,7 @@ def get_styles(font_name: str, font_file: Optional[str]) -> Dict[str, ParagraphS
             parent=styles['Normal'],
             fontName=font_name if font_file else "Helvetica",
             fontSize=11,
-            spaceAfter=12,
+            spaceAfter=8,
             alignment=4,
             leading=18
         ),
