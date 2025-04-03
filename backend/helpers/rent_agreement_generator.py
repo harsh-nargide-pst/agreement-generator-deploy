@@ -26,7 +26,7 @@ llm = ChatOpenAI(
 
 
 def generate_table(owner_name: str, owner_address: str, tenants: List[Dict[str, str]]) -> str:
-    table = "\n### In acknowledgment of the terms and conditions stated herein, both Owner and the Tenant(s) have set their respective hands and signatures on this Agreement on the day, month, and year first above written.\n\n"
+    table = "\n IN ACKNOWLEDGMENT OF THE TERMS AND CONDITIONS STATED HEREIN, BOTH OWNER AND THE TENANT(S) HAVE SET THEIR RESPECTIVE HANDS AND SIGNATURES ON THIS AGREEMENT ON THE DAY, MONTH, AND YEAR FIRST ABOVE WRITTEN.\n\n"
     table += (
         "| Name & Address                                    | Photo           | Signature           |  \n"
     )
@@ -49,21 +49,11 @@ def generate_table(owner_name: str, owner_address: str, tenants: List[Dict[str, 
     
     return table
 
-    # Tenant details
-    for idx, tenant in enumerate(tenants, start=1):
-        table += f"| **Tenant {idx}:**                  |                 |                     |  \n"
-        table += f"| **Name:** {tenant['name']}      | [TENANT {idx} PHOTO]| [TENANT {idx} SIGNATURE]|  \n"
-        table += f"| **Address:** {tenant['address']} |                 |                     |  \n"
-        table += "|--------------------------------|-----------------|---------------------|  \n"
-
-    return table
-
-
 def generate_furniture_table(furniture: List[Dict[str, str]]) -> str:
     if not furniture:
-        return "\n### The Owner hereby lets out the Demised Premises to the Tenant on an unfurnished basis, with NO furniture or appliances provided as part of this Agreement."
+        return "\n THE OWNER HEREBY LETS OUT THE DEMISED PREMISES TO THE TENANT ON AN UNFURNISHED BASIS, WITH NO FURNITURE OR APPLIANCES PROVIDED AS PART OF THIS AGREEMENT."
 
-    table = "\n### The Owner hereby lets out the Demised Premises to Tenant with following furniture and appliances, forming an integral part of this Agreement: \n\n"
+    table = "\n THE OWNER HEREBY LETS OUT THE DEMISED PREMISES TO TENANT WITH FOLLOWING FURNITURE AND APPLIANCES, FORMING AN INTEGRAL PART OF THIS AGREEMENT: \n\n"
     table += "| Sr. No. | Name              | Units |\n"
     table += "|---------|-------------------|-------|\n"
     for item in furniture:

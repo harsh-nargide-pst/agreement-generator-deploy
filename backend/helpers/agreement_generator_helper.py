@@ -88,15 +88,15 @@ def doc_template(output_pdf_path: str) -> SimpleDocTemplate:
 def get_styles(font_name: str, font_file: Optional[str]) -> Dict[str, ParagraphStyle]:
     styles = getSampleStyleSheet()
     custom_styles = {
-        "heading1": ParagraphStyle(name='CustomHeading1', parent=styles['Heading1'], fontName=font_name if font_file else "Helvetica", fontSize=16, spaceAfter=2),
+        "heading1": ParagraphStyle(name='CustomHeading1', parent=styles['Heading1'], fontName=font_name if font_file else "Helvetica", fontSize=16, alignment=1, spaceAfter=2),
         "heading2": ParagraphStyle(name='CustomHeading2', parent=styles['Heading2'], fontName=font_name if font_file else "Helvetica", fontSize=14, spaceAfter=2),
-        "heading3": ParagraphStyle(name='CustomHeading3', parent=styles['Heading3'], fontName=font_name if font_file else "Helvetica", fontSize=12, spaceAfter=2),
+        "heading3": ParagraphStyle(name='CustomHeading3', parent=styles['Heading3'], fontName=font_name if font_file else "Helvetica", fontSize=11, alignment=1, spaceAfter=2),
         "bullet": ParagraphStyle(name='CustomBullet', parent=styles['Normal'], fontName=font_name if font_file else "Helvetica", leftIndent=12, spaceAfter=5),
         "normal": ParagraphStyle(
             name='CustomNormal',
             parent=styles['Normal'],
             fontName=font_name if font_file else "Helvetica",
-            fontSize=10,
+            fontSize=11,
             spaceAfter=2,
             alignment=4,
             leading=12
@@ -106,16 +106,12 @@ def get_styles(font_name: str, font_file: Optional[str]) -> Dict[str, ParagraphS
 
 def process_heading(line: str, custom_styles: Dict[str, ParagraphStyle]) -> Optional[Tuple[Paragraph, Spacer]]:
     if line.startswith('# '):
-        return Paragraph(line[2:], custom_styles['heading1']), Spacer(1, 6)
+        return Paragraph(line[2:], custom_styles['heading1']), Spacer(1, 2)
     elif line.startswith('## '):
-        return Paragraph(line[3:], custom_styles['heading2']), Spacer(1, 4)
+        return Paragraph(line[3:], custom_styles['heading2']), Spacer(1, 2)
     elif line.startswith('### '):
         return Paragraph(line[4:], custom_styles['heading3']), Spacer(1, 2)
     return None
-
-def process_bullet(line: str, custom_styles: Dict[str, ParagraphStyle]) -> Paragraph:
-    content = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line[2:])
-    return Paragraph('• ' + content, custom_styles['bullet'])
 
 def process_table(
     lines: List[str],
@@ -194,8 +190,7 @@ def create_pdf_file(
                 if line.startswith('#'):
                     if heading := process_heading(line, custom_styles):
                         elements.extend(heading)
-                elif line.startswith('- '):
-                    elements.append(process_bullet(line, custom_styles))
+
                 elif line.startswith('|') and i + 2 < len(lines) and lines[i+1].startswith('|---'):
                     table, spacer, i = process_table(lines, i, custom_styles, doc, temp_files)
                     elements.append(table)
@@ -233,7 +228,7 @@ def create_pdf_file(
                         formatted_line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line)
                         elements.append(Paragraph(formatted_line, left_aligned_style))
                     else:
-                        elements.append(Spacer(1, 10))
+                        elements.append(Spacer(1, 2))
 
                 i += 1
         else:
@@ -245,7 +240,6 @@ def create_pdf_file(
                 is_special_format = (
                     not line or
                     line.startswith('#') or
-                    line.startswith('-') or
                     (line.startswith('|') and i + 2 < len(lines) and lines[i+1].startswith('|---'))
                 )
 
@@ -294,8 +288,7 @@ def create_pdf_file(
 
                     if heading := process_heading(line, custom_styles):
                         elements.extend(heading)
-                    elif line.startswith('- '):
-                        elements.append(process_bullet(line, custom_styles))
+
                     elif line.startswith('|') and i + 2 < len(lines) and lines[i+1].startswith('|---'):
                         table, spacer, i = process_table(lines, i, custom_styles, doc, temp_files)
                         elements.append(table)
