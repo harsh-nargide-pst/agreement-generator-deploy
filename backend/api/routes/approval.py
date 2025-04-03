@@ -98,6 +98,9 @@ async def reject_user(data: Data, request: Request, db: Prisma = Depends(get_db)
         elif data.user in current_state.tenants:
             rejected_by_name = current_state.tenant_names[data.user]
             rejected_by_role = "tenant"
+        elif data.user in current_state.witnesses:
+            rejected_by_name = current_state.witness_names[data.user]
+            rejected_by_role = "witness" 
     elif isinstance(current_state, TemplateAgreementState):
         if data.user == current_state.authority_id:
             rejected_by_name = "Authority"

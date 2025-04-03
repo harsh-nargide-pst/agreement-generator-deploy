@@ -1366,6 +1366,7 @@ export function AgreementGenerator() {
                   Object.values(witnessOtpState).some(
                     (state) => !state?.isVerified
                   )) ||
+                (active === 4 && !furnishingType) ||
                 (active === 4 &&
                   (furnishingType === "furnished" ||
                     furnishingType === "semi-furnished") &&
