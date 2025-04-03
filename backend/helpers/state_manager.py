@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from models.rental_agreement import AgreementRequest
 
+
 class State(TypedDict):
     messages: Annotated[list, add_messages]
     agreement_id: int
@@ -43,6 +44,7 @@ class AgreementState:
     amenities: List[str] = field(default_factory=list)
     user_id: str = ""
     witnesses: Dict[str, bool] = field(default_factory=dict)
+    witness_details: list[dict] = field(default_factory=list)
     witness_names: Dict[str, str] = field(default_factory=dict)
     witness_emails: Dict[str, Optional[str]] = field(default_factory=dict)
     witness_signatures: Dict[str, Optional[str]] = field(default_factory=dict)
@@ -72,7 +74,9 @@ class AgreementState:
         self.witness_emails[witness_id] = witness_email
         return witness_id
 
-    def update_witness(self, witness_signature: str, witness_photo: str, witness_id: str):
+    def update_witness(
+        self, witness_signature: str, witness_photo: str, witness_id: str
+    ):
         self.witness_signatures[witness_id] = witness_signature
         self.witness_photos[witness_id] = witness_photo
 
@@ -80,7 +84,7 @@ class AgreementState:
         """Sets the owner's name."""
         self.owner_name = owner_name
         self.owner_email = owner_email
-        
+
     def set_agreement_details(self, request: AgreementRequest) -> None:
         """
         Sets only the required agreement details from the request object.
@@ -106,11 +110,21 @@ class AgreementState:
                 setattr(self, field, getattr(request, field))
 
         # Handle tenant_details explicitly
-        if hasattr(request, "tenant_details") and isinstance(request.tenant_details, list):
+        if hasattr(request, "tenant_details") and isinstance(
+            request.tenant_details, list
+        ):
             if all(isinstance(tenant, dict) for tenant in request.tenant_details):
                 self.tenant_details = request.tenant_details
             else:
                 raise ValueError("tenant_details must be a list of dictionaries.")
+
+        if hasattr(request, "witness_details") and isinstance(
+            request.witness_details, list
+        ):
+            if all(isinstance(witness, dict) for witness in request.witness_details):
+                self.witness_details = request.witness_details
+        else:
+            raise ValueError("witness_details must be a list of dictionaries.")
 
     def is_fully_approved(self) -> bool:
         """Checks if the agreement is fully approved."""
