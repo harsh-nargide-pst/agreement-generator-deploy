@@ -54,7 +54,7 @@ def create_tool_with_agreement_id(agreement_id):
         Tool(
             name="generate_agreement",
             func=lambda user_input: run_agreement_tool(user_input, agreement_id),
-            description="Generate a rental agreement PDF from the provided details. Output only the agreement text.",
+            description="Generate a agreement PDF from the provided details. Output only the agreement text.",
         )
     ]
 

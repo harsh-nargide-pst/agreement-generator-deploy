@@ -249,28 +249,28 @@ def format_agreement_details(
 ## BASIC RENTAL DETAILS
 
 ### OWNER DETAILS
-- **Owner Name:** {owner_name}
-- **Owner Address:** {owner_address}
+    - **Owner Name:** {owner_name}
+    - **Owner Address:** {owner_address}
 
 ### TENANT DETAILS
-{tenants_info}
+    {tenants_info}
 
 ### PROPERTY DETAILS
-- **Property Address:** {property_address}
-- **City:** {city}
-- **BHK Type:** {bhk_type}
-- **Area:** {area} sq. ft.
-- **Furnishing Type:** {furnishing_type}
+    - **Property Address:** {property_address}
+    - **City:** {city}
+    - **BHK Type:** {bhk_type}
+    - **Area:** {area} sq. ft.
+    - **Furnishing Type:** {furnishing_type}
 
 ### Financial Details
-- **Rent Amount:** Rs. {rent_amount}/month
-- **Security Deposit:** Rs. {security_deposit}
+    - **Rent Amount:** Rs. {rent_amount}/month
+    - **Security Deposit:** Rs. {security_deposit}
 
 ### Term of Agreement
-- The agreement is valid for {num_months} months, from {start_date} to {end_date}.
+    - The agreement is valid for {num_months} months, from {start_date} to {end_date}.
 
 ### Registration Date
-- **Registration Date:** The agreement was registered on **{registration_date}** in compliance with applicable legal requirements.
+    - The agreement was registered on **{registration_date}** in compliance with applicable legal requirements.
 
 ## TERMS AND CONDITIONS:
     **Each section MUST include 1-2 detailed points, with a minimum of 30 to 50 words per section.**
@@ -281,5 +281,5 @@ def format_agreement_details(
     5.**Owner Rights:** Inspection protocols, notice periods, and property access conditions.
     6.**Termination:** Notice periods, penalties for early exit, and deposit refund conditions.
     7.**Alterations:** Restrictions on modifications, approval process, and restoration requirements.
-    8.**AMENITIES**: Must provide a clear description of available amenities ({', '.join(amenities)}), along with their usage rules, restrictions, and maintenance responsibilities.
+    8.**Amenities**: Must provide a clear description of available amenities ({', '.join(amenities)}), along with their usage rules, restrictions, and maintenance responsibilities.
     """

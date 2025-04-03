@@ -14,7 +14,7 @@ router = APIRouter()
 async def validate_image(request: Request):
     data = await request.json()
     image_url = data.get("image_url")
-    agreement_id = data.get("agreement_id")
+    agreement_id = int(data.get("agreement_id"))
     user_id = random.randint(1, 10000)
     if not image_url:
         raise HTTPException(status_code=400, detail="Missing image_url")

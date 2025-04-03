@@ -26,7 +26,7 @@ llm = ChatOpenAI(
 
 
 def generate_table(owner_name: str, owner_address: str, tenants: List[Dict[str, str]]) -> str:
-    table = "\n## Approval and Signature\n\n"
+    table = "\n### In acknowledgment of the terms and conditions stated herein, both Owner and the Tenant(s) have set their respective hands and signatures on this Agreement on the day, month, and year first above written.\n\n"
     table += (
         "| Name and Address               | Photo           | Signature           |  \n"
     )
@@ -58,9 +58,9 @@ def generate_table(owner_name: str, owner_address: str, tenants: List[Dict[str, 
 
 def generate_furniture_table(furniture: List[Dict[str, str]]) -> str:
     if not furniture:
-        return "\n## Furniture and Appliances\n\nNo furniture or appliances included."
+        return "\n### The Owner hereby lets out the Demised Premises to the Tenant on an unfurnished basis, with NO furniture or appliances provided as part of this Agreement."
 
-    table = "\n## Furniture and Appliances\n\n"
+    table = "\n### The Owner hereby lets out the Demised Premises to Tenant with following furniture and appliances, forming an integral part of this Agreement: \n\n"
     table += "| Sr. No. | Name              | Units |\n"
     table += "|---------|-------------------|-------|\n"
     for item in furniture:
