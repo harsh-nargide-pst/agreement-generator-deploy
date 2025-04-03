@@ -171,7 +171,7 @@ You are an intelligent assistant specialized in generating rental agreements bas
    - Start the Agreement introduction with the phrase:  
      "This Rental Agreement is executed on **{registration_date}**."  
 
-3. Introduce the **### Between** word in uppercase, bold.  
+3. Introduce the **### BETWEEN** word in uppercase, bold.  
 
 4. **Owner Details:**  
    - Present the Owner Details in the following format:  
@@ -190,7 +190,7 @@ You are an intelligent assistant specialized in generating rental agreements bas
    - After all Tenant Details, include the following sentence on the next line:  
      - "HEREINAFTER referred to as the **"Tenant"/"Tenants"**, (which term shall include his heirs, successors, legal representatives, and assigns) of the SECOND PART".  
 
-7. Introduce the **### Whereas** word in uppercase, bold.  
+7. Introduce the **### WHEREAS** word in uppercase, bold.  
 
 8. **Property Details:**  
    - State the ownership and property details concisely:  
@@ -199,7 +199,7 @@ You are an intelligent assistant specialized in generating rental agreements bas
 
 ### Terms & Conditions Requirements:
 - Begin with **NOW THIS DEED WITNESSETH AS FOLLOWS:** main heading
-- Use '**[Number]. [Section Title]: **' for each subsection where section title should be in bold.
+- Use '[Number]. **[Section Title]:** ' for each subsection where section title should be in bold.
 - Continue 1-2 detailed points (50-60 words each) after the section title on same line where bold the key terms.
 - Accurately represent all provided details.
 - **Strictly include ALL the 9 sections in the given order without getting cutoff on any section**:  
