@@ -195,6 +195,15 @@ async def create_agreement_details(
             )
             tenants.append((tenant_id, tenant["email"]))
 
+        # Store witness details
+        witnesses = []
+        for witness in request.witness_details:
+            witness_id = current_state.add_witness(
+                witness["email"],
+                witness["name"],
+            )
+            witnesses.append((witness_id, witness["email"]))
+
         # Format agreement details
         agreement_details = format_agreement_details(
             owner_name=request.owner_name,
@@ -232,9 +241,17 @@ async def create_agreement_details(
                 tenant_email, current_state.pdf_file_path, "tenant", agreement_id, False, tenant_id
             )
             tenant_successes.append(success)
+
+        witness_successes = []
+        for witness_id, witness_email in witnesses:
+            success, _ = send_email_with_attachment(
+                witness_email, current_state.pdf_file_path, "witness", agreement_id, False, witness_id
+            )
+            witness_successes.append(success)
+
         current_state.is_pdf_generated = True
 
-        if owner_success and all(tenant_successes):
+        if owner_success and all(tenant_successes) and all(witness_successes):
             delete_temp_file(current_state)
             try:
                 # Wait for approvals
@@ -247,6 +264,8 @@ async def create_agreement_details(
                     current_state.owner_approved = True
                     for tenant_id in current_state.tenants:
                         current_state.tenants[tenant_id] = True
+                    for witness_id in current_state.witnesses:
+                        current_state.witnesses[witness_id] = True
                     # Generate final PDF with signatures and get the path
                     create_pdf(current_state)
                     final_pdf_path = current_state.pdf_file_path
@@ -258,6 +277,10 @@ async def create_agreement_details(
                     for tenant_id, tenant_email in tenants:
                         send_email_with_attachment(
                             tenant_email, final_pdf_path, "tenant", agreement_id, False, tenant_id
+                        )
+                    for witness_id, witness_email in witnesses:
+                        send_email_with_attachment(
+                            witness_email, final_pdf_path, "witness", agreement_id, False, witness_id
                         )
                     # Stores final agreement pdf in db
                     await store_final_pdf(db, agreement_id, current_state.pdf_file_path)
@@ -273,6 +296,8 @@ async def create_agreement_details(
                     await create_user_agreement_status(db, current_state.owner_id, agreement_id, AgreementStatus.REJECTED)
                     for tenant_id, _ in tenants:
                         await create_user_agreement_status(db, tenant_id, agreement_id, AgreementStatus.REJECTED)
+                    for witness_id, _ in witnesses:
+                        await create_user_agreement_status(db, witness_id, agreement_id, AgreementStatus.REJECTED)
 
                     delete_temp_file(current_state)
                     delete_temp_images(current_state)
@@ -285,6 +310,8 @@ async def create_agreement_details(
                     await create_user_agreement_status(db, current_state.owner_id, agreement_id, AgreementStatus.EXPIRED)
                     for tenant_id, _ in tenants:
                         await create_user_agreement_status(db, tenant_id, agreement_id, AgreementStatus.EXPIRED)
+                    for witness_id, _ in witnesses:
+                        await create_user_agreement_status(db, witness_id, agreement_id, AgreementStatus.EXPIRED)
 
                     delete_temp_file(current_state)
                     delete_temp_images(current_state)
@@ -299,6 +326,8 @@ async def create_agreement_details(
                     await create_user_agreement_status(db, current_state.owner_id, agreement_id, AgreementStatus.FAILED)
                     for tenant_id, _ in tenants:
                         await create_user_agreement_status(db, tenant_id, agreement_id, AgreementStatus.FAILED)
+                    for witness_id, _ in witnesses:
+                        await create_user_agreement_status(db, witness_id, agreement_id, AgreementStatus.FAILED)
 
                     delete_temp_file(current_state)
                     delete_temp_images(current_state)
@@ -313,6 +342,8 @@ async def create_agreement_details(
                 await create_user_agreement_status(db, current_state.owner_id, agreement_id, AgreementStatus.FAILED)
                 for tenant_id, _ in tenants:
                     await create_user_agreement_status(db, tenant_id, agreement_id, AgreementStatus.FAILED)
+                for witness_id, _ in witnesses:
+                    await create_user_agreement_status(db, witness_id, agreement_id, AgreementStatus.FAILED)
 
                 delete_temp_file(current_state)
                 delete_temp_images(current_state)
@@ -329,6 +360,8 @@ async def create_agreement_details(
         await create_user_agreement_status(db, current_state.owner_id, agreement_id, AgreementStatus.FAILED)
         for tenant_id, _ in tenants:
             await create_user_agreement_status(db, tenant_id, agreement_id, AgreementStatus.FAILED)
+        for witness_id, _ in witnesses:
+            await create_user_agreement_status(db, witness_id, agreement_id, AgreementStatus.FAILED)
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         )

@@ -860,7 +860,7 @@ export function AgreementGenerator() {
       <Title order={3}>Generate Rent Agreement</Title>
       <Divider my="2rem" />
       <Container>
-        <Stepper active={active} pt="2rem">
+        <Stepper active={active} pt="2rem" size="xs">
           <Stepper.Step label="Step 1" description="Owner Details">
             <TextInput
               label="Full name"

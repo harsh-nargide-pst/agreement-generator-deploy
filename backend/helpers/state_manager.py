@@ -42,6 +42,11 @@ class AgreementState:
     furniture_and_appliances: List[Dict[str, str]] = field(default_factory=list)
     amenities: List[str] = field(default_factory=list)
     user_id: str = ""
+    witnesses: Dict[str, bool] = field(default_factory=dict)
+    witness_names: Dict[str, str] = field(default_factory=dict)
+    witness_emails: Dict[str, Optional[str]] = field(default_factory=dict)
+    witness_signatures: Dict[str, Optional[str]] = field(default_factory=dict)
+    witness_photos: Dict[str, Optional[str]] = field(default_factory=dict)
 
     def reset(self) -> None:
         """Resets the agreement state to its default values."""
@@ -58,6 +63,18 @@ class AgreementState:
     def update_tenant(self, tenant_signature: str, tenant_photo: str, tenant_id: str):
         self.tenant_signatures[tenant_id] = tenant_signature
         self.tenant_photos[tenant_id] = tenant_photo
+
+    def add_witness(self, witness_email: str, witness_name: str) -> str:
+        """Adds a new witness to the agreement."""
+        witness_id = str(uuid.uuid4())
+        self.witnesses[witness_id] = False  # False indicates not yet approved
+        self.witness_names[witness_id] = witness_name
+        self.witness_emails[witness_id] = witness_email
+        return witness_id
+
+    def update_witness(self, witness_signature: str, witness_photo: str, witness_id: str):
+        self.witness_signatures[witness_id] = witness_signature
+        self.witness_photos[witness_id] = witness_photo
 
     def set_owner(self, owner_name: str, owner_email: str) -> None:
         """Sets the owner's name."""
@@ -97,7 +114,11 @@ class AgreementState:
 
     def is_fully_approved(self) -> bool:
         """Checks if the agreement is fully approved."""
-        return self.owner_approved and all(self.tenants.values())
+        return (
+            self.owner_approved
+            and all(self.tenants.values())
+            and all(self.witnesses.values())
+        )
 
 
 @dataclass
