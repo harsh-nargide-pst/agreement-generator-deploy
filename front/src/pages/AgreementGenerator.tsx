@@ -147,8 +147,12 @@ export function AgreementGenerator() {
     }, 1000);
   };
 
-  const [witnessOtpState, setWitnessOtpState] = useState<Record<number, OtpState>>({});
-  const witnessTimersRef = useRef<Record<number, ReturnType<typeof setInterval> | null>>({});
+  const [witnessOtpState, setWitnessOtpState] = useState<
+    Record<number, OtpState>
+  >({});
+  const witnessTimersRef = useRef<
+    Record<number, ReturnType<typeof setInterval> | null>
+  >({});
 
   const startWitnessCountdown = (index: number) => {
     if (witnessOtpState[index]?.isCountdownActive) return;
@@ -492,12 +496,14 @@ export function AgreementGenerator() {
         ...prev,
         witnesses: {
           ...prev.witnesses,
-          [index]: { send: prev.witnesses[index]?.send || false, verify: false },
+          [index]: {
+            send: prev.witnesses[index]?.send || false,
+            verify: false,
+          },
         },
       }));
     }
   };
-
 
   const form = useForm({
     mode: "controlled",
@@ -1107,7 +1113,9 @@ export function AgreementGenerator() {
                   label={`Enter OTP for Witness ${index + 1}`}
                   disabledSendOtp={
                     !form.values.witnesses[index].email ||
-                    !/^\S+@\S+\.\S+$/.test(form.values.witnesses[index].email) ||
+                    !/^\S+@\S+\.\S+$/.test(
+                      form.values.witnesses[index].email
+                    ) ||
                     (witnessOtpState[index]?.isSent &&
                       witnessOtpState[index]?.isCountdownActive) ||
                     witnessOtpState[index]?.isVerified

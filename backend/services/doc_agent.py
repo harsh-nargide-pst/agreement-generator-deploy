@@ -68,12 +68,12 @@ def delete_temp_file(current_state):
 
 def delete_temp_images(current_state):
     """Removes only the image files associated with the current agreement."""
-    
+
     files_to_delete = [
         current_state.owner_photo,
         current_state.owner_signature
     ]
-    
+
     # Add tenant photos and signatures
     files_to_delete.extend(current_state.tenant_photos.values())
     files_to_delete.extend(current_state.tenant_signatures.values())
@@ -101,7 +101,7 @@ def save_base64_image(photo_data: str, user_id: str, is_signature: bool = False)
     os.makedirs(save_dir, exist_ok=True)
 
     unique_id = uuid.uuid4().hex
-    
+
     if is_signature:
         photo_path = f"{save_dir}/{user_id}_signature_{unique_id}.{file_ext}"
     else:

@@ -19,7 +19,12 @@ export interface TenantsOtpState {
 }
 
 // Type for different user roles in OTP verification
-export type OtpUserType = "owner" | "tenant" | "authority" | "participants"|"witness";
+export type OtpUserType =
+  | "owner"
+  | "tenant"
+  | "authority"
+  | "participants"
+  | "witness";
 
 // Response interface for OTP verification
 export interface OTPVerificationResponse {
