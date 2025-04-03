@@ -1,12 +1,11 @@
 import tempfile
 from helpers.rent_agreement_generator import resize_image
 from constants import Model, CHAT_OPENAI_BASE_URL
-import pypandoc
 from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from helpers.state_manager import State, state_manager
-from helpers.agreement_generator_helper import extract_text_from_pdf
+from helpers.agreement_generator_helper import extract_text_from_pdf, extract_fonts, create_pdf_file
 from prompts import (
     SYSTEM_PROMPT_FOR_SIGNATURE_PLACEHOLDER,
     USER_PROMPT_FOR_SIGNATURE_PLACEHOLDER,
@@ -56,6 +55,9 @@ def generate_agreement(state: State):
         return {"messages": current_state.agreement_text}
 
     template_chunks = extract_text_from_pdf(current_state.template_file_path)
+    font_name, font_file = extract_fonts(current_state.template_file_path)
+    current_state.pdf_font_name = font_name
+    current_state.pdf_font_file = font_file
 
     generated_text = ""
     for chunk in template_chunks:
@@ -90,10 +92,7 @@ def create_pdf(state: State):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", dir=base_dir)
     temp_pdf_path = temp_pdf.name
-
-    pypandoc.convert_text(
-        content, "pdf", "md", encoding="utf-8", outputfile=temp_pdf_path
-    )
+    create_pdf_file(content, temp_pdf_path, state.pdf_font_name, state.pdf_font_file, True)
     state.pdf_file_path = temp_pdf_path
     return {"messages": content}
 
@@ -134,7 +133,7 @@ def update_pdf_with_signatures(agreement_id: str):
 
     # Convert updated content to PDF
     temp_pdf_path = current_state.pdf_file_path
-    pypandoc.convert_text(content, "pdf", format="md", outputfile=temp_pdf_path)
+    create_pdf_file(content, temp_pdf_path, current_state.pdf_font_name, current_state.pdf_font_file, False)
 
 
 # Build graph

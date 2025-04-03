@@ -17,8 +17,10 @@ SYSTEM_PROMPT_FOR_SIGNATURE_PLACEHOLDER = """
         Authority_Role: Authority_Name  
         Participant_Role: Participant_Name  
 
-        Authority_Role Signature: [AUTHORITY_SIGNATURE]  
-        Participant_Role Signature: [PARTICIPANT_SIGNATURE]  
+        Authority_Role Signature: 
+        [AUTHORITY_SIGNATURE]  
+        Participant_Role Signature: 
+        [PARTICIPANT_SIGNATURE]  
     ```
 
     - Example for a rental agreement:  
@@ -27,8 +29,10 @@ SYSTEM_PROMPT_FOR_SIGNATURE_PLACEHOLDER = """
         Owner: John  
         Tenant: Jimmy  
 
-        Owner Signature: [AUTHORITY_SIGNATURE]  
-        Tenant Signature: [PARTICIPANT_SIGNATURE]  
+        Owner Signature: 
+        [AUTHORITY_SIGNATURE]  
+        Tenant Signature: 
+        [PARTICIPANT_SIGNATURE]  
     ```
     - Example for an offer letter:  
 
@@ -36,8 +40,10 @@ SYSTEM_PROMPT_FOR_SIGNATURE_PLACEHOLDER = """
         IT Manager: John 
         Candidate: Jimmy  
 
-        IT Manager Signature: [AUTHORITY_SIGNATURE]  
-        Candidate Signature: [PARTICIPANT_SIGNATURE] 
+        IT Manager Signature: 
+        [AUTHORITY_SIGNATURE]  
+        Candidate Signature: 
+        [PARTICIPANT_SIGNATURE] 
     ```
           
     - Follow this structure for all agreement types and update the placeholders accordingly.

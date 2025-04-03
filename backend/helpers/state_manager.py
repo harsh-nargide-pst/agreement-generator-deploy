@@ -136,6 +136,8 @@ class TemplateAgreementState:
     template_file_path: str = ""
     is_pdf_generated: bool = False
     agreement_id: Optional[int] = None
+    pdf_font_name: str = ""
+    pdf_font_file: str = ""
 
     def reset(self) -> None:
         """Agreement state to its default values."""
