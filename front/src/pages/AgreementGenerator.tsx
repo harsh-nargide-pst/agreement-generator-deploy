@@ -1381,7 +1381,7 @@ export function AgreementGenerator() {
                   furnitureList.length === 0)
               }
             >
-              {active < 6 ? "Continue" : "Generate Agreement"}
+              {active < 5 ? "Continue" : "Generate Agreement"}
             </Button>
           )}
         </Group>
