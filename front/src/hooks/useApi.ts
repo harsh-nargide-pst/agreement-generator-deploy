@@ -62,6 +62,7 @@ const useApi = <T>(endpoint: BackendEndpoints): ApiResponse<T> => {
         method: method,
         headers: {
           ...headers,
+          "ngrok-skip-browser-warning": "69420",
           Authorization: `Bearer ${token}`,
         },
         params: params,

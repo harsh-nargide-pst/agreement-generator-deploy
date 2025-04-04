@@ -15,10 +15,10 @@ interface AgreementContextType {
 const AgreementsContext = createContext<AgreementContextType>({
   agreements: [],
   loadRentAgreemnts: false,
-  fetchAgreements: (method: {}) => Promise.resolve(),
+  fetchAgreements: async (_method: {}) => {},
   templateAgreement: [],
   loadTemplatetAgreemnts: false,
-  fetchTemplateAgreements: (method: {}) => Promise.resolve(),
+  fetchTemplateAgreements: async (_method: {}) => {},
 });
 
 export const AgreementsProvider = ({ children }: { children: ReactNode }) => {
