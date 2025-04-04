@@ -274,12 +274,13 @@ def format_agreement_details(
 
 ## TERMS AND CONDITIONS:
     **Each section MUST include 1-2 detailed points, with a minimum of 30 to 50 words per section.**
-    1.**License Fee:** Payment details including Rs. {rent_amount}, due dates, and escalation terms.
-    2.**Deposit:** Refund process, deductions, and timelines for Rs. {security_deposit}.
-    3.**Utilities:** Responsibilities for bill payments, shared costs, and connection setup.
-    4.**Tenant Duties:** Maintenance requirements, prohibitions, cleanliness, and occupancy rules.
-    5.**Owner Rights:** Inspection protocols, notice periods, and property access conditions.
-    6.**Termination:** Notice periods, penalties for early exit, and deposit refund conditions.
-    7.**Alterations:** Restrictions on modifications, approval process, and restoration requirements.
-    8.**Amenities**: Must provide a clear description of available amenities ({', '.join(amenities)}), along with their usage rules, restrictions, and maintenance responsibilities.
+    1. **License Fee:** Payment details including Rs. {rent_amount}, due dates, and escalation terms.
+    2. **Deposit:** Refund process, deductions, and timelines for Rs. {security_deposit}.
+    3. **Term of Agreement:** Duration of {num_months} months, from {start_date} to {end_date}, with options for renewal or extension.
+    4. **Registration Date:** Agreement registration on **{registration_date}**, ensuring legal compliance and validity.
+    5. **Amenities:**  Must provide a clear description of available amenities ({', '.join(amenities)}), along with their usage rules, restrictions, and maintenance responsibilities.
+    6. **Tenant Duties:** Maintenance requirements, prohibitions, cleanliness, and occupancy rules.
+    7. **Owner Rights:** Inspection protocols, notice periods, and property access conditions.
+    8. **Termination:** Notice periods, penalties for early exit, and deposit refund conditions.
+    9. **Alterations:** Restrictions on modifications, approval process, and restoration requirements.
     """
