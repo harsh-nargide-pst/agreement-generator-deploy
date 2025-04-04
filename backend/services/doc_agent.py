@@ -78,6 +78,9 @@ def delete_temp_images(current_state):
     files_to_delete.extend(current_state.tenant_photos.values())
     files_to_delete.extend(current_state.tenant_signatures.values())
 
+    files_to_delete.extend(current_state.witness_photos.values())
+    files_to_delete.extend(current_state.witness_signatures.values())
+
     for file_path in files_to_delete:
         if file_path and os.path.exists(file_path):
             try:
