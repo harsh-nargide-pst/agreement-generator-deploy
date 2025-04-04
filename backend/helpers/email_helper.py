@@ -49,6 +49,11 @@ def send_rejection_email(
             tenant_email = getattr(current_state, "tenant_emails", {}).get(tenant_id)
             if tenant_email:
                 emails_to_notify.append((tenant_email, "tenant", tenant_id))
+        # Add all witnesses' emails
+        for witness_id in current_state.witnesses.keys():
+            witness_email = getattr(current_state, "witness_emails", {}).get(witness_id)
+            if witness_email:
+                emails_to_notify.append((witness_email, "witness", witness_id))
 
     success_list = []
     failed_list = {}

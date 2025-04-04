@@ -25,29 +25,37 @@ llm = ChatOpenAI(
 )
 
 
-def generate_table(owner_name: str, owner_address: str, tenants: List[Dict[str, str]]) -> str:
+def generate_table(
+    owner_name: str,
+    owner_address: str,
+    tenants: List[Dict[str, str]],
+    witnesses: List[Dict[str, str]],
+) -> str:
     table = "\n IN ACKNOWLEDGMENT OF THE TERMS AND CONDITIONS STATED HEREIN, BOTH OWNER AND THE TENANT(S) HAVE SET THEIR RESPECTIVE HANDS AND SIGNATURES ON THIS AGREEMENT ON THE DAY, MONTH, AND YEAR FIRST ABOVE WRITTEN.\n\n"
-    table += (
-        "| Name & Address                                    | Photo           | Signature           |  \n"
-    )
-    table += (
-        "|--------------------------------------------------|-----------------|---------------------|  \n"
-    )
+    table += "| Name & Address                                    | Photo           | Signature           |  \n"
+    table += "|--------------------------------------------------|-----------------|---------------------|  \n"
 
     # Owner details
     table += (
         f"|**Owner:**<br/>**Name:** {owner_name}<br/>**Address:** {owner_address} "
         "| [OWNER PHOTO]   | [OWNER SIGNATURE]   |  \n"
     )
-    
+
     # Tenant details
     for idx, tenant in enumerate(tenants, start=1):
         table += (
             f"|**Tenant {idx}:**<br/>**Name:**{tenant['name']}<br/>**Address:**{tenant['address']} "
             f"| [TENANT {idx} PHOTO] | [TENANT {idx} SIGNATURE] |  \n"
         )
-    
+
+    for idx, witness in enumerate(witnesses, start=1):
+        table += (
+            f"|**Witness {idx}:**<br/>**Name:**{witness['name']}<br/>**Address:**{witness['address']} "
+            f"| [WITNESS {idx} PHOTO] | [WITNESS {idx} SIGNATURE] |  \n"
+        )
+
     return table
+
 
 def generate_furniture_table(furniture: List[Dict[str, str]]) -> str:
     if not furniture:
@@ -90,6 +98,7 @@ def generate_agreement(state: State):
     registration_date = current_state.registration_date
     amenities = current_state.amenities
     furniture_and_appliances = current_state.furniture_and_appliances
+    witness_details = current_state.witness_details
 
     agreement_details = format_agreement_details(
         owner_name=owner,
@@ -120,7 +129,7 @@ def generate_agreement(state: State):
         [
             content_response,
             generate_furniture_table(furniture_and_appliances),
-            generate_table(owner, owner_address, tenant_details),
+            generate_table(owner, owner_address, tenant_details, witness_details),
         ]
     )
 
@@ -212,6 +221,29 @@ def create_pdf(state: State):
                 )
             else:
                 content = content.replace(placeholder, photo)
+
+        # Replace witness signatures and photos
+        for i, (witness_id, signature) in enumerate(
+            state.witness_signatures.items(), 1
+        ):
+            placeholder = f"[WITNESS {i} SIGNATURE]"
+            if signature and os.path.isfile(signature):
+                witness_signature_data, _ = resize_image(signature, 60, 30)
+                content = content.replace(
+                    placeholder, f" ![Witness {i} Signature]({witness_signature_data})"
+                )
+            else:
+                content = content.replace(placeholder, "Signature not available")
+
+        for i, (witness_id, photo) in enumerate(state.witness_photos.items(), 1):
+            placeholder = f"[WITNESS {i} PHOTO]"
+            if photo and os.path.isfile(photo):
+                witness_photos_data, _ = resize_image(photo, 60, 60)
+                content = content.replace(
+                    placeholder, f" ![Witness PHOTO]({witness_photos_data})"
+                )
+            else:
+                content = content.replace(placeholder, "Photo not available")
         isDraft = False
 
     # Ensure no Rupee symbols make it through to the PDF

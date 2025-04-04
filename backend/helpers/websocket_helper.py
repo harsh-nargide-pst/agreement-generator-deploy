@@ -155,6 +155,30 @@ async def listen_for_approval(
                                 logging.warning("Owner has rejected!")
                                 return ApprovalResult.REJECTED
 
+                        elif user_id in current_state.witnesses:
+                            current_state.witnesses[user_id] = data.get("approved", False)
+                            if current_state.witnesses[user_id]:
+                                witness_name = current_state.witness_names.get(user_id)
+                                logging.info(
+                                    f"Witness {witness_name} ({user_id}) has approved the agreement."
+                                )
+                                witness_signature_path = current_state.witness_signatures.get(user_id)
+                                if witness_signature_path and os.path.isfile(witness_signature_path):
+                                    current_state.witness_signatures[user_id] = witness_signature_path
+                                else:
+                                    current_state.witness_signatures[user_id] = (
+                                        f"APPROVED BY {witness_name} - {datetime.now()}"
+                                    )
+
+                                witness_photo_path = current_state.witness_photos.get(user_id)
+                                if witness_photo_path and os.path.isfile(witness_photo_path):
+                                    current_state.witness_photos[user_id] = witness_photo_path
+                                else:
+                                    current_state.witness_photos[user_id] = f"{witness_name}"
+                            else:
+                                logging.warning(f"Witness {user_id} has rejected!")
+                                return ApprovalResult.REJECTED
+
                     # Check if both parties have responded
                     if is_template:
                         if current_template_state.is_fully_approved():
@@ -165,7 +189,7 @@ async def listen_for_approval(
                     else:
                         if current_state.is_fully_approved():
                             logging.info(
-                                "Agreement successfully approved by Owner and Tenants."
+                                "Agreement successfully approved by Owner, Tenants, and Witnesses."
                             )
                             return ApprovalResult.APPROVED
 
